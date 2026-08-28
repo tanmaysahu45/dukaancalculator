@@ -2,296 +2,324 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop Gram Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shop Smart Calc</title>
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Shop%20Calculator%22%2C%22short_name%22%3A%22ShopCalc%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%232563eb%22%7D">
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #f0f2f5; margin: 0; padding: 12px; }
-    .container { max-width: 480px; margin: 0 auto; }
-    .card { background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    h2, h3 { margin: 0 0 12px 0; color: #1a1a1a; text-align: center; }
-    
-    /* Login Page */
-    #loginScreen { display: flex; flex-direction: column; justify-content: center; min-height: 80vh; }
-    .btn { background: #16a34a; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; }
-    .btn-danger { background: #dc2626; }
-    .btn-sm { padding: 6px 10px; font-size: 13px; width: auto; }
-    input { width: 100%; padding: 12px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; margin-bottom: 10px; outline: none; }
-    input:focus { border-color: #16a34a; }
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --border: #334155;
+    }
 
-    /* Main App */
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .item-tags { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
-    .item-tag { background: #e2e8f0; border: 2px solid #cbd5e1; border-radius: 20px; padding: 8px 14px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-    .item-tag.active { background: #16a34a; color: white; border-color: #16a34a; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text-main); padding: 12px; min-height: 100vh; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 12px; }
 
-    /* Quick Rate Table */
-    .rate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
-    .rate-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; text-align: center; }
-    .rate-box span { font-size: 12px; color: #64748b; display: block; }
-    .rate-box strong { font-size: 15px; color: #0f172a; }
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; }
+    .header h2 { font-size: 20px; font-weight: 800; color: #fff; }
+    .install-btn { background: #eab308; color: #000; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: none; }
 
-    /* Quick Calcs */
-    .calc-row { background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-    .calc-row label { font-size: 14px; font-weight: bold; color: #166534; display: block; margin-bottom: 6px; }
-    .big-result { font-size: 24px; font-weight: 900; color: #15803d; text-align: right; }
+    /* Card */
+    .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-    /* Shortcut Chips */
-    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    .chip { background: white; border: 1px solid #86efac; border-radius: 14px; padding: 4px 10px; font-size: 13px; font-weight: bold; cursor: pointer; }
+    /* Item Selector */
+    .items-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+    .items-scroll::-webkit-scrollbar { display: none; }
+    .item-pill { background: #334155; color: var(--text-main); border: 2px solid transparent; padding: 8px 16px; border-radius: 30px; font-weight: 700; font-size: 14px; white-space: nowrap; cursor: pointer; }
+    .item-pill.active { background: var(--primary); border-color: #60a5fa; color: #fff; box-shadow: 0 0 10px rgba(37,99,235,0.5); }
 
-    /* Item List */
-    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    /* Active Item Banner */
+    .active-banner { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .active-banner .name { font-size: 20px; font-weight: 800; color: #38bdf8; }
+    .active-banner .rate { font-size: 15px; font-weight: bold; color: var(--accent); }
+
+    /* 2-Way Sync Box */
+    .calc-box { background: #0b1329; border: 2px solid #3b82f6; border-radius: 14px; padding: 14px; }
+    .calc-title { text-align: center; font-size: 13px; color: var(--text-muted); margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sync-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+    .input-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .input-wrap label { font-size: 13px; font-weight: bold; color: var(--text-muted); }
+    .input-wrap input { background: #1e293b; border: 2px solid var(--border); border-radius: 10px; color: #fff; font-size: 22px; font-weight: 900; padding: 12px 10px; width: 100%; text-align: center; outline: none; }
+    .input-wrap input:focus { border-color: var(--primary); background: #0f172a; }
+    .sync-icon { font-size: 20px; color: #60a5fa; font-weight: bold; margin-top: 18px; }
+
+    /* Chips */
+    .chip-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; justify-content: center; }
+    .chip { background: #1e293b; border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: bold; color: #f1f5f9; cursor: pointer; }
+    .chip:active { background: var(--primary); }
+
+    /* Quick Grid */
+    .rate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .grid-box { background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; }
+    .grid-box span { font-size: 12px; color: var(--text-muted); display: block; }
+    .grid-box strong { font-size: 16px; color: var(--accent); }
+
+    /* Management Section */
+    .manage-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .manage-head h4 { font-size: 15px; color: var(--text-muted); }
+    .btn { background: var(--primary); color: #fff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-danger { background: var(--danger); }
+    .btn-sm { padding: 5px 8px; font-size: 12px; }
+    .form-row { display: grid; grid-template-columns: 1.5fr 1fr auto; gap: 8px; margin-bottom: 12px; }
+    .form-row input { background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 8px; font-size: 14px; outline: none; }
+    .item-list-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
   </style>
 </head>
 <body>
 
 <div class="container">
-
-  <!-- Login Screen -->
-  <div id="loginScreen" class="card">
-    <h2>Shop Login</h2>
-    <p style="text-align: center; color: #64748b; font-size: 14px;">Enter your mobile number to access your saved rates</p>
-    <input type="tel" id="userPhone" placeholder="Mobile Number (e.g. 9876543210)" maxlength="10">
-    <button class="btn" onclick="login()">Open Shop</button>
+  
+  <div class="header">
+    <h2>⚡ Shop Rate Calc</h2>
+    <button id="installAppBtn" class="install-btn" onclick="installApp()">📲 Install App</button>
   </div>
 
-  <!-- Main Screen -->
-  <div id="mainApp" style="display: none;">
-    <div class="top-bar">
-      <span style="font-size: 13px; color: #64748b;" id="userDisplay"></span>
-      <button class="btn btn-sm btn-danger" onclick="logout()">Logout</button>
+  <div class="card" style="padding: 10px;">
+    <div class="items-scroll" id="itemPills"></div>
+  </div>
+
+  <div class="card">
+    <div class="active-banner">
+      <div class="name" id="selectedName">Paneer</div>
+      <div class="rate" id="selectedRate">₹0 / 100g</div>
     </div>
 
-    <!-- Item Selector -->
-    <div class="card" style="padding: 10px;">
-      <div style="font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #475569;">Select Item:</div>
-      <div class="item-tags" id="itemTags"></div>
-    </div>
-
-    <!-- Quick Gram Rate Card -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="selectedItemName" style="margin:0;">Paneer</h3>
-        <span id="baseRateDisplay" style="color: #16a34a; font-weight: bold;">₹0 / 100g</span>
+    <div class="calc-box">
+      <div class="calc-title">Instant 2-Way Sync</div>
+      <div class="sync-row">
+        <div class="input-wrap">
+          <label>Rupees (₹)</label>
+          <input type="number" id="inputRupees" placeholder="₹ 0" oninput="handleRupeesChange()">
+        </div>
+        <div class="sync-icon">⇄</div>
+        <div class="input-wrap">
+          <label>Weight (Gram)</label>
+          <input type="number" id="inputGrams" placeholder="0 g" oninput="handleGramsChange()">
+        </div>
       </div>
 
-      <div class="rate-grid">
-        <div class="rate-box"><span>50 Gram</span><strong id="r50">₹0</strong></div>
-        <div class="rate-box"><span>100 Gram</span><strong id="r100">₹0</strong></div>
-        <div class="rate-box"><span>200 Gram</span><strong id="r200">₹0</strong></div>
-        <div class="rate-box"><span>250 Gram</span><strong id="r250">₹0</strong></div>
-        <div class="rate-box"><span>500 Gram</span><strong id="r500">₹0</strong></div>
-        <div class="rate-box"><span>1 Kg (1000g)</span><strong id="r1000">₹0</strong></div>
-      </div>
-    </div>
-
-    <!-- Calculator 1: Rupees -> Grams -->
-    <div class="calc-row">
-      <label>Enter Rupees (₹) ➔ Get Grams:</label>
-      <div class="chips">
+      <div class="chip-group">
         <div class="chip" onclick="setRupees(20)">₹20</div>
         <div class="chip" onclick="setRupees(50)">₹50</div>
         <div class="chip" onclick="setRupees(100)">₹100</div>
         <div class="chip" onclick="setRupees(200)">₹200</div>
         <div class="chip" onclick="setRupees(250)">₹250</div>
       </div>
-      <input type="number" id="inputRupees" placeholder="Enter ₹ amount..." oninput="calcByRupees()">
-      <div class="big-result" id="outGrams">0 Gram</div>
-    </div>
-
-    <!-- Calculator 2: Grams -> Rupees -->
-    <div class="calc-row" style="background: #eff6ff; border-color: #bfdbfe;">
-      <label style="color: #1e40af;">Enter Weight (Gram) ➔ Get Price (₹):</label>
-      <div class="chips">
+      <div class="chip-group" style="margin-top: 6px;">
         <div class="chip" onclick="setGrams(100)">100g</div>
         <div class="chip" onclick="setGrams(200)">200g</div>
         <div class="chip" onclick="setGrams(250)">250g</div>
-        <div class="chip" onclick="setGrams(350)">350g</div>
         <div class="chip" onclick="setGrams(500)">500g</div>
+        <div class="chip" onclick="setGrams(1000)">1kg</div>
       </div>
-      <input type="number" id="inputGrams" placeholder="Enter weight in grams..." oninput="calcByGrams()">
-      <div class="big-result" style="color: #1d4ed8;" id="outRupees">₹0</div>
     </div>
 
-    <!-- Add / Edit Items -->
-    <div class="card">
-      <h3>Add / Update Item</h3>
-      <input type="text" id="newItemName" placeholder="Item Name (e.g. Malai Paneer)">
-      <input type="number" id="newItemRate" placeholder="Rate for 100 Grams (₹)">
-      <button class="btn" onclick="saveItem()">Save Item</button>
-
-      <div style="margin-top: 15px;" id="itemsList"></div>
+    <div class="rate-grid">
+      <div class="grid-box" onclick="setGrams(50)"><span>50 Gram</span><strong id="q50">₹0</strong></div>
+      <div class="grid-box" onclick="setGrams(100)"><span>100 Gram</span><strong id="q100">₹0</strong></div>
+      <div class="grid-box" onclick="setGrams(200)"><span>200 Gram</span><strong id="q200">₹0</strong></div>
+      <div class="grid-box" onclick="setGrams(250)"><span>250 Gram</span><strong id="q250">₹0</strong></div>
+      <div class="grid-box" onclick="setGrams(500)"><span>500 Gram</span><strong id="q500">₹0</strong></div>
+      <div class="grid-box" onclick="setGrams(1000)"><span>1 Kg</span><strong id="q1000">₹0</strong></div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="manage-head">
+      <h4>Manage Items & Rates</h4>
+    </div>
+    
+    <div class="form-row">
+      <input type="text" id="itemNameInput" placeholder="Item name (e.g. Khoya)">
+      <input type="number" id="itemRateInput" placeholder="Rate/100g (₹)">
+      <button class="btn" onclick="saveItem()">Save</button>
+    </div>
+
+    <div id="itemsContainer"></div>
   </div>
 
 </div>
 
 <script>
-  let currentUser = localStorage.getItem('shop_user') || '';
-  let items = [];
-  let selectedIndex = 0;
+  // Default Items
+  let items = [
+    { name: 'Paneer', rate100g: 36 },
+    { name: 'Khoya / Mawa', rate100g: 32 },
+    { name: 'Rasgulla', rate100g: 24 }
+  ];
+  let activeIndex = 0;
 
+  // Local Storage Load
   function init() {
-    if (currentUser) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      document.getElementById('userDisplay').innerText = `Shop: ${currentUser}`;
-      loadData();
-    } else {
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('mainApp').style.display = 'none';
-    }
-  }
-
-  function login() {
-    const phone = document.getElementById('userPhone').value.trim();
-    if (phone.length < 10) return alert('Please enter a valid 10-digit mobile number');
-    currentUser = phone;
-    localStorage.setItem('shop_user', phone);
-    init();
-  }
-
-  function logout() {
-    localStorage.removeItem('shop_user');
-    location.reload();
-  }
-
-  function loadData() {
-    const saved = localStorage.getItem(`items_${currentUser}`);
+    const saved = localStorage.getItem('shop_items_v2');
     if (saved) {
       items = JSON.parse(saved);
     } else {
-      // Default Items (Rate per 100 grams)
-      items = [
-        { name: 'Paneer', ratePer100g: 36 },
-        { name: 'Mawa / Khoya', ratePer100g: 32 },
-        { name: 'Rasgulla', ratePer100g: 24 }
-      ];
       saveData();
     }
-    renderUI();
+    renderTabs();
+    updateView();
   }
 
   function saveData() {
-    localStorage.setItem(`items_${currentUser}`, JSON.stringify(items));
+    localStorage.setItem('shop_items_v2', JSON.stringify(items));
   }
 
-  function renderUI() {
-    const tagBox = document.getElementById('itemTags');
-    const listBox = document.getElementById('itemsList');
-    tagBox.innerHTML = '';
-    listBox.innerHTML = '';
+  function renderTabs() {
+    const pills = document.getElementById('itemPills');
+    const list = document.getElementById('itemsContainer');
+    pills.innerHTML = '';
+    list.innerHTML = '';
 
-    if (items.length === 0) return;
-    if (selectedIndex >= items.length) selectedIndex = 0;
+    if (activeIndex >= items.length) activeIndex = 0;
 
     items.forEach((item, index) => {
-      // Tag Buttons
-      const btn = document.createElement('div');
-      btn.className = `item-tag ${index === selectedIndex ? 'active' : ''}`;
-      btn.innerText = item.name;
-      btn.onclick = () => { selectedIndex = index; renderUI(); };
-      tagBox.appendChild(btn);
+      // Top Pill
+      const pill = document.createElement('div');
+      pill.className = `item-pill ${index === activeIndex ? 'active' : ''}`;
+      pill.innerText = item.name;
+      pill.onclick = () => { activeIndex = index; renderTabs(); updateView(); };
+      pills.appendChild(pill);
 
-      // Edit / Delete Row
+      // Manage Row
       const row = document.createElement('div');
-      row.className = 'item-row';
+      row.className = 'item-list-row';
       row.innerHTML = `
-        <div><strong>${item.name}</strong> - ₹${item.ratePer100g}/100g (₹${item.ratePer100g * 10}/kg)</div>
-        <div>
+        <div><strong>${item.name}</strong> <span style="color:var(--text-muted);">(₹${item.rate100g}/100g)</span></div>
+        <div style="display:flex; gap:6px;">
           <button class="btn btn-sm" onclick="editItem(${index})">Edit</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteItem(${index})">Delete</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteItem(${index})">Del</button>
         </div>
       `;
-      listBox.appendChild(row);
+      list.appendChild(row);
     });
-
-    updateSelectedView();
   }
 
-  function updateSelectedView() {
-    const item = items[selectedIndex];
-    if (!item) return;
+  function updateView() {
+    const current = items[activeIndex];
+    if (!current) return;
 
-    document.getElementById('selectedItemName').innerText = item.name;
-    document.getElementById('baseRateDisplay').innerText = `₹${item.ratePer100g} / 100g`;
+    document.getElementById('selectedName').innerText = current.name;
+    document.getElementById('selectedRate').innerText = `₹${current.rate100g} / 100g (₹${current.rate100g * 10}/kg)`;
 
-    const r = item.ratePer100g;
-    document.getElementById('r50').innerText = `₹${(r * 0.5).toFixed(1)}`;
-    document.getElementById('r100').innerText = `₹${r}`;
-    document.getElementById('r200').innerText = `₹${(r * 2).toFixed(1)}`;
-    document.getElementById('r250').innerText = `₹${(r * 2.5).toFixed(1)}`;
-    document.getElementById('r500').innerText = `₹${(r * 5).toFixed(1)}`;
-    document.getElementById('r1000').innerText = `₹${(r * 10).toFixed(1)}`;
+    // Update Quick Grid
+    const r = current.rate100g;
+    document.getElementById('q50').innerText = `₹${(r * 0.5).toFixed(1)}`;
+    document.getElementById('q100').innerText = `₹${r}`;
+    document.getElementById('q200').innerText = `₹${(r * 2).toFixed(1)}`;
+    document.getElementById('q250').innerText = `₹${(r * 2.5).toFixed(1)}`;
+    document.getElementById('q500').innerText = `₹${(r * 5).toFixed(1)}`;
+    document.getElementById('q1000').innerText = `₹${(r * 10).toFixed(1)}`;
 
-    calcByRupees();
-    calcByGrams();
+    // Refresh Active sync box
+    const rsVal = document.getElementById('inputRupees').value;
+    if (rsVal) handleRupeesChange();
+    else handleGramsChange();
   }
 
-  function calcByRupees() {
-    const item = items[selectedIndex];
-    const rs = parseFloat(document.getElementById('inputRupees').value) || 0;
-    if (item && rs > 0) {
-      const grams = (rs / item.ratePer100g) * 100;
-      document.getElementById('outGrams').innerText = `${grams.toFixed(1)} Gram`;
-    } else {
-      document.getElementById('outGrams').innerText = `0 Gram`;
+  // 2-WAY LIVE SYNC FUNCTIONS
+  function handleRupeesChange() {
+    const current = items[activeIndex];
+    const rs = parseFloat(document.getElementById('inputRupees').value);
+    if (current && !isNaN(rs) && rs > 0) {
+      const grams = (rs / current.rate100g) * 100;
+      document.getElementById('inputGrams').value = grams % 1 === 0 ? grams : grams.toFixed(1);
+    } else if (isNaN(rs) || rs === 0) {
+      document.getElementById('inputGrams').value = '';
     }
   }
 
-  function calcByGrams() {
-    const item = items[selectedIndex];
-    const g = parseFloat(document.getElementById('inputGrams').value) || 0;
-    if (item && g > 0) {
-      const rs = (g / 100) * item.ratePer100g;
-      document.getElementById('outRupees').innerText = `₹${rs.toFixed(2)}`;
-    } else {
-      document.getElementById('outRupees').innerText = `₹0`;
+  function handleGramsChange() {
+    const current = items[activeIndex];
+    const grams = parseFloat(document.getElementById('inputGrams').value);
+    if (current && !isNaN(grams) && grams > 0) {
+      const rs = (grams / 100) * current.rate100g;
+      document.getElementById('inputRupees').value = rs % 1 === 0 ? rs : rs.toFixed(2);
+    } else if (isNaN(grams) || grams === 0) {
+      document.getElementById('inputRupees').value = '';
     }
   }
 
   function setRupees(val) {
     document.getElementById('inputRupees').value = val;
-    calcByRupees();
+    handleRupeesChange();
   }
 
   function setGrams(val) {
     document.getElementById('inputGrams').value = val;
-    calcByGrams();
+    handleGramsChange();
   }
 
   function saveItem() {
-    const name = document.getElementById('newItemName').value.trim();
-    const rate = parseFloat(document.getElementById('newItemRate').value);
+    const name = document.getElementById('itemNameInput').value.trim();
+    const rate = parseFloat(document.getElementById('itemRateInput').value);
 
-    if (!name || !rate) return alert('Please enter valid item name and 100g rate');
+    if (!name || isNaN(rate) || rate <= 0) return alert('Enter valid name and rate for 100g');
 
-    const existingIdx = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
-    if (existingIdx >= 0) {
-      items[existingIdx].ratePer100g = rate;
+    const exist = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+    if (exist >= 0) {
+      items[exist].rate100g = rate;
+      activeIndex = exist;
     } else {
-      items.push({ name, ratePer100g: rate });
-      selectedIndex = items.length - 1;
+      items.push({ name, rate100g: rate });
+      activeIndex = items.length - 1;
     }
 
     saveData();
-    renderUI();
-    document.getElementById('newItemName').value = '';
-    document.getElementById('newItemRate').value = '';
-  }
-
-  function deleteItem(index) {
-    if (confirm(`Do you want to delete "${items[index].name}"?`)) {
-      items.splice(index, 1);
-      saveData();
-      renderUI();
-    }
+    renderTabs();
+    updateView();
+    document.getElementById('itemNameInput').value = '';
+    document.getElementById('itemRateInput').value = '';
   }
 
   function editItem(index) {
-    document.getElementById('newItemName').value = items[index].name;
-    document.getElementById('newItemRate').value = items[index].ratePer100g;
+    document.getElementById('itemNameInput').value = items[index].name;
+    document.getElementById('itemRateInput').value = items[index].rate100g;
+  }
+
+  function deleteItem(index) {
+    if (confirm(`Delete "${items[index].name}"?`)) {
+      items.splice(index, 1);
+      saveData();
+      renderTabs();
+      updateView();
+    }
+  }
+
+  // --- OFFLINE & DOWNLOAD (PWA) SYSTEM ---
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installAppBtn').style.display = 'block';
+  });
+
+  function installApp() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        document.getElementById('installAppBtn').style.display = 'none';
+        deferredPrompt = null;
+      });
+    }
+  }
+
+  // Register Offline Service Worker directly
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
   }
 
   init();
