@@ -1,6 +1,6 @@
 {
-  "name": "Shop Smart Rate Calculator",
-  "short_name": "ShopCalc",
+  "name": "Sahu Hotel Rate Calculator",
+  "short_name": "Sahu Hotel",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",

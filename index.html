@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Shop Smart Live Calc</title>
+  <title>Sahu Hotel - Rate Calculator</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <style>
@@ -84,7 +84,7 @@
   
   <div class="header">
     <div style="display:flex; align-items:center; gap:8px;">
-      <h2>⚡ Shop Calc</h2>
+      <h2>🏪 Sahu Hotel</h2>
       <span id="networkStatus" class="status-badge status-online">Syncing...</span>
     </div>
     <button id="installAppBtn" class="install-btn">📲 Install</button>
@@ -147,7 +147,7 @@
     
     <div class="form-col">
       <div class="form-inputs">
-        <input type="text" id="itemNameInput" placeholder="Name (e.g. Khoya)">
+        <input type="text" id="itemNameInput" placeholder="Item Name (e.g. Paneer)">
         <input type="number" id="itemRateInput" placeholder="Rate/100g (₹)">
       </div>
       <button class="btn" id="saveItemBtn" style="width: 100%;">Save & Sync Rate</button>
@@ -159,22 +159,19 @@
 </div>
 
 <script>
-  // आपके Firebase प्रोजेक्ट का डायरेक्ट REST API एंडपॉइंट
   const FIREBASE_API = "https://aancalculator-default-rtdb.firebaseio.com/shop_items.json";
 
   let items = [];
   let activeIndex = 0;
 
-  // 1. सबसे पहले फोन की मेमोरी (LocalStorage) से पढ़ो
   function loadLocalData() {
-    const saved = localStorage.getItem('shop_items_final');
+    const saved = localStorage.getItem('sahu_hotel_items');
     if (saved) {
       try {
         items = JSON.parse(saved);
       } catch(e) {}
     }
     
-    // अगर पहली बार खोल रहे हैं और कुछ नहीं है
     if (!items || items.length === 0) {
       items = [
         { name: 'Paneer', rate100g: 36 },
@@ -186,7 +183,6 @@
     updateView();
   }
 
-  // 2. Firebase से लाइव डेटा लाओ (हर 3 सेकंड में चेक करेगा)
   async function fetchCloudData() {
     if (!navigator.onLine) {
       setOfflineBadge();
@@ -197,15 +193,13 @@
       if (response.ok) {
         const cloudData = await response.json();
         if (cloudData && Array.isArray(cloudData) && cloudData.length > 0) {
-          // अगर क्लाउड में नया बदलाव है तभी अपडेट करो
           if (JSON.stringify(cloudData) !== JSON.stringify(items)) {
             items = cloudData;
-            localStorage.setItem('shop_items_final', JSON.stringify(items));
+            localStorage.setItem('sahu_hotel_items', JSON.stringify(items));
             renderTabs();
             updateView();
           }
         } else if (cloudData === null) {
-          // डेटाबेस खाली है तो मौजूदा डेटा भेज दो
           syncToCloud();
         }
         setOnlineBadge();
@@ -215,10 +209,8 @@
     }
   }
 
-  // 3. क्लाउड और लोकल मेमोरी दोनों में सेव करो
   async function syncToCloud() {
-    // पहले तुरंत लोकल में पक्का सेव करो ताकि रिफ्रेश पर न उड़े
-    localStorage.setItem('shop_items_final', JSON.stringify(items));
+    localStorage.setItem('sahu_hotel_items', JSON.stringify(items));
     
     if (navigator.onLine) {
       try {
@@ -349,7 +341,7 @@
     const rate = parseFloat(document.getElementById('itemRateInput').value);
 
     if (!name || isNaN(rate) || rate <= 0) {
-      alert('कृपया सही नाम और 100g का रेट डालें!');
+      alert('Please enter a valid Item Name and Rate for 100g!');
       return;
     }
 
@@ -375,7 +367,7 @@
   }
 
   function deleteItem(index) {
-    if (confirm(`क्या आप "${items[index].name}" को हटाना चाहते हैं?`)) {
+    if (confirm(`Do you want to delete "${items[index].name}"?`)) {
       items.splice(index, 1);
       if (items.length === 0) {
         items.push({ name: 'Paneer', rate100g: 36 });
@@ -386,7 +378,6 @@
     }
   }
 
-  // PWA Install Setup
   let deferredPrompt;
   const installBtn = document.getElementById('installAppBtn');
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -411,7 +402,6 @@
     });
   }
 
-  // स्टार्ट करें
   loadLocalData();
   fetchCloudData();
   setInterval(fetchCloudData, 3000);
